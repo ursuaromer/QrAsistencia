@@ -479,9 +479,9 @@ public class Scaneador extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(0, 210, 0, 0);
         jPanel1.add(jLabel1, gridBagConstraints);
 
-        jLabel3.setFont(new java.awt.Font("Verdana", 1, 12)); // NOI18N
+        jLabel3.setFont(new java.awt.Font("Verdana", 1, 18)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel3.setText("CURSO");
+        jLabel3.setText("SELECCIONE EL CURSO");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;

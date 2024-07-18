@@ -68,6 +68,7 @@ public class InterfazderegistrodeQR extends javax.swing.JFrame {
         jLabel8 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
         jLabel9 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -150,6 +151,9 @@ public class InterfazderegistrodeQR extends javax.swing.JFrame {
 
         jLabel9.setText("jLabel9");
         jPanel1.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 330, -1, -1));
+
+        jLabel10.setText("jLabel10");
+        jPanel1.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 380, -1, -1));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -303,6 +307,7 @@ public class InterfazderegistrodeQR extends javax.swing.JFrame {
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;

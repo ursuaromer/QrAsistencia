@@ -39,9 +39,14 @@ import java.util.Timer;
 import java.util.TimerTask;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import java.awt.Frame;
 
 public class Scaneador extends javax.swing.JFrame {
 
+    private String lastProcessedQR = "";
+    private long lastProcessTime = 0;
+    private static final long PROCESS_COOLDOWN = 3000; // 500 ms cooldown
+    private static final long SCAN_INTERVAL = 500;
     private Webcam webcam;
     private WebcamPanel webcamPanel;
     private ScheduledExecutorService executor;
@@ -54,6 +59,7 @@ public class Scaneador extends javax.swing.JFrame {
         playMP3("/Sonidos/piti.mp3");  // Nota la barra al principio
         initWebcam();
         startScan();
+          setFullscreen();
 
         //rsscalelabel.RSScaleLabel.setScaleLabel(jLabel2,"src/imagen/escanear.png");
     }
@@ -96,52 +102,71 @@ public class Scaneador extends javax.swing.JFrame {
     private String generatePDF(String[] data, String formattedDate, String formattedTime) {
         String fileName = "asistencia_" + System.currentTimeMillis() + ".pdf";
         try {
-            Document document = new Document();
-            PdfWriter.getInstance(document, new FileOutputStream(fileName));
+            Document document = new Document(PageSize.A4);
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(fileName));
             document.open();
 
-            // Añadir el texto introductorio
-            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
-            Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
+            // Añadir un encabezado
+            Font headerFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD, BaseColor.DARK_GRAY);
+            Paragraph header = new Paragraph("Registro de Asistencia", headerFont);
+            header.setAlignment(Element.ALIGN_CENTER);
+            header.setSpacingAfter(20);
+            document.add(header);
 
-            Paragraph title = new Paragraph("Se ha registrado su asistencia:", titleFont);
-            title.setAlignment(Element.ALIGN_CENTER);
-            title.setSpacingAfter(20f);
-            document.add(title);
-
-            // Crear la tabla para los datos
+            // Crear la tabla
             PdfPTable table = new PdfPTable(2);
-            table.setWidthPercentage(100);
+            table.setWidthPercentage(90);
             table.setSpacingBefore(10f);
             table.setSpacingAfter(10f);
 
-            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
-            Font contentFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
+            // Estilo para las celdas de encabezado
+            PdfPCell headerCell = new PdfPCell();
+            headerCell.setBackgroundColor(new BaseColor(240, 240, 240));
+            headerCell.setPadding(5);
+            headerCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            headerCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
-            String[] fields = {"Nombre", "Apellido", "DNI", "Carrera", "Ciclo", "Curso", "Fecha de registro", "Hora de registro"};
+            // Estilo para las celdas de contenido
+            PdfPCell contentCell = new PdfPCell();
+            contentCell.setPadding(5);
+            contentCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            contentCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+
+            // Fuentes
+            Font fieldFont = new Font(Font.FontFamily.HELVETICA, 11, Font.BOLD);
+            Font valueFont = new Font(Font.FontFamily.HELVETICA, 11);
+
+            String[] fields = {
+                "Código de Estudiante", "Nombre", "Apellido", "DNI",
+                "Carrera", "Ciclo", "Curso", "Fecha de registro", "Hora de registro"
+            };
 
             for (int i = 0; i < fields.length; i++) {
-                PdfPCell headerCell = new PdfPCell(new Phrase(fields[i], headerFont));
-                headerCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                headerCell.setPadding(5);
+                headerCell.setPhrase(new Phrase(fields[i], fieldFont));
                 table.addCell(headerCell);
 
-                PdfPCell valueCell;
-                if (i < 3) {
-                    valueCell = new PdfPCell(new Phrase(data[i], contentFont));
-                } else if (i < 6) {
-                    // Ajustamos los índices para saltar el email
-                    valueCell = new PdfPCell(new Phrase(data[i + 1], contentFont));
-                } else if (i == 6) {
-                    valueCell = new PdfPCell(new Phrase(formattedDate, contentFont));
+                String value;
+                if (i < 4) {
+                    value = data[i];
+                } else if (i < 7) {
+                    value = data[i + 1];
+                } else if (i == 7) {
+                    value = formattedDate;
                 } else {
-                    valueCell = new PdfPCell(new Phrase(formattedTime, contentFont));
+                    value = formattedTime;
                 }
-                valueCell.setPadding(5);
-                table.addCell(valueCell);
+                contentCell.setPhrase(new Phrase(value, valueFont));
+                table.addCell(contentCell);
             }
 
             document.add(table);
+
+            // Añadir un pie de página
+            Font footerFont = new Font(Font.FontFamily.HELVETICA, 8, Font.ITALIC, BaseColor.GRAY);
+            Paragraph footer = new Paragraph("Este documento es una confirmación oficial de asistencia.", footerFont);
+            footer.setAlignment(Element.ALIGN_CENTER);
+            document.add(footer);
+
             document.close();
 
             return fileName;
@@ -291,7 +316,7 @@ public class Scaneador extends javax.swing.JFrame {
 
             if (webcam.isOpen()) {
                 executor = Executors.newSingleThreadScheduledExecutor();
-                executor.scheduleAtFixedRate(this::scanQR, 0, 100, TimeUnit.MILLISECONDS);
+                executor.scheduleAtFixedRate(this::scanQR, 0, 500, TimeUnit.MILLISECONDS);
                 System.out.println("Escaneo iniciado.");
             } else {
                 System.out.println("No se pudo iniciar el escaneo. La cámara no está disponible.");
@@ -312,41 +337,117 @@ public class Scaneador extends javax.swing.JFrame {
 
                     if (result != null) {
                         String scannedText = result.getText();
+                        long currentTime = System.currentTimeMillis();
+
+                        // Verificar si es un nuevo QR o si ha pasado suficiente tiempo desde el último procesamiento
+                        if (!scannedText.equals(lastProcessedQR) || (currentTime - lastProcessTime) > PROCESS_COOLDOWN) {
+                            lastProcessedQR = scannedText;
+                            lastProcessTime = currentTime;
+
+                            processQRCode(scannedText);
+                        }
+                    }
+                }
+            } catch (NotFoundException ignored) {
+                // No QR code found in this frame
+            } catch (Exception e) {
+                System.out.println("Error al escanear: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("La cámara no está abierta. Intentando abrir...");
+            webcam.open();
+        }
+    }
+
+    private void processQRCode(String scannedText) {
+        // Procesar el código QR en un hilo separado
+        new Thread(() -> {
+            String[] data = parseQRData(scannedText);
+            if (data != null) {
+                SwingUtilities.invokeLater(() -> showData(data));
+                playSuccessSound();
+                sendEmailAsync(data[4], data);
+            }
+        }).start();
+    }
+
+    private String[] parseQRData(String scannedText) {
+        String[] lines = scannedText.split("\n");
+        if (lines.length >= 7) {
+            String[] data = new String[8];
+            for (int i = 0; i < 7; i++) {
+                String[] parts = lines[i].split(": ", 2);
+                if (parts.length == 2) {
+                    data[i] = parts[1];
+                }
+            }
+            // Procesar la carrera separadamente
+            if (lines.length > 6) {
+                String[] carreraParts = lines[5].split(":", 2);
+                if (carreraParts.length == 2) {
+                    data[5] = carreraParts[1].trim();
+                }
+                String[] cicloParts = lines[6].split(":", 2);
+                if (cicloParts.length == 2) {
+                    data[6] = cicloParts[1].trim();
+                }
+            }
+            data[7] = (String) jComboBox1.getSelectedItem();
+            return data;
+        }
+        return null;
+    }
+
+    private void sendEmailAsync(String toEmail, String[] data) {
+        new Thread(() -> {
+            sendEmail(toEmail, data);
+        }).start();
+    }
+
+    /*private void scanQR() {
+        if (webcam.isOpen()) {
+            try {
+                BufferedImage image = webcam.getImage();
+                if (image != null) {
+                    LuminanceSource source = new BufferedImageLuminanceSource(image);
+                    BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+                    Result result = new MultiFormatReader().decode(bitmap);
+
+                    if (result != null) {
+                        String scannedText = result.getText();
                         System.out.println("Código QR detectado: " + scannedText);
 
-                        // Procesar el QR sin importar si es el mismo que el anterior
                         String[] lines = scannedText.split("\n");
-                        if (lines.length >= 6) {
-                            String[] data = new String[7];
-                            for (int i = 0; i < 6; i++) {
+                        if (lines.length >= 7) {  // Aumentamos a 7 para incluir el código de estudiante
+                            String[] data = new String[8];  // Aumentamos a 8 para incluir el código de estudiante
+                            for (int i = 0; i < 7; i++) {  // Cambiamos a 7
                                 String[] parts = lines[i].split(": ", 2);
                                 if (parts.length == 2) {
                                     data[i] = parts[1];
                                 }
                             }
                             // Procesar la carrera separadamente
-                            if (lines.length > 5) {
-                                String[] carreraParts = lines[4].split(":", 2);
+                            if (lines.length > 6) {  // Cambiamos a 6
+                                String[] carreraParts = lines[5].split(":", 2);
                                 if (carreraParts.length == 2) {
-                                    data[4] = carreraParts[1].trim();
+                                    data[5] = carreraParts[1].trim();
                                 }
-                                String[] cicloParts = lines[5].split(":", 2);
+                                String[] cicloParts = lines[6].split(":", 2);
                                 if (cicloParts.length == 2) {
-                                    data[5] = cicloParts[1].trim();
+                                    data[6] = cicloParts[1].trim();
                                 }
                             }
-                            data[6] = (String) jComboBox1.getSelectedItem();
+                            data[7] = (String) jComboBox1.getSelectedItem();
                             System.out.println("Datos procesados: " + Arrays.toString(data));
 
                             SwingUtilities.invokeLater(() -> {
                                 showData(data);
                                 playSuccessSound();
-                                sendEmail(data[3], data);
-                                JOptionPane.showMessageDialog(this, "Asistencia guardada", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                                sendEmail(data[4], data);  // Cambiamos el índice del email a 4
                             });
 
-                            // Pequeña pausa para evitar escaneos múltiples del mismo código
-                            Thread.sleep(2000);
+                           // Thread.sleep(2000);
                         } else {
                             System.out.println("El código QR no contiene suficientes datos.");
                         }
@@ -363,7 +464,7 @@ public class Scaneador extends javax.swing.JFrame {
             webcam.open();
         }
     }
-
+     */
     private void saveToDatabase(String[] data) {
         // Aquí irá la lógica para guardar en la base de datos
         // Por ahora, solo imprimiremos un mensaje
@@ -400,6 +501,11 @@ public class Scaneador extends javax.swing.JFrame {
                 e.printStackTrace();
             }
         });*/
+    }
+
+    private void setFullscreen() {
+        GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        device.setFullScreenWindow(this);
     }
 
     /* private void resetDataAfterDelay() {

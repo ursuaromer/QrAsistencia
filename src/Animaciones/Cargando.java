@@ -13,6 +13,10 @@ public class Cargando extends JDialog {
         initComponents();
     }
 
+    public Cargando() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     private void initComponents() {
         setUndecorated(true);
         setSize(parentFrame.getSize());

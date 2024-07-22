@@ -16,6 +16,7 @@ import javax.swing.SwingWorker;
 import com.jhlabs.image.GaussianFilter;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.time.Clock;
@@ -25,6 +26,8 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import loginproyectoruber.Ingreso;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import javax.swing.Timer;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -36,11 +39,15 @@ import java.net.URL;
 
 public class MenuInicio extends javax.swing.JFrame {
 
-    private int labelX = -500; // Posición inicial fuera de la pantalla
+    private Point initialClick;
+
+    private int labelY; // Posición inicial fuera de la pantalla
     private final int LABEL_SPEED = 2; // Velocidad de la animación
     private Timer timer;
 
     public MenuInicio() {
+
+        setUndecorated(true); // Esto oculta la barra de título
         initComponents();
         //setSize(2000, 1000);
         setLocationRelativeTo(null);
@@ -48,19 +55,44 @@ public class MenuInicio extends javax.swing.JFrame {
         startLabelAnimation();
 
         //rsscalelabel.RSScaleLabel.setScaleLabel(jLabel6,"src/imagen/reg.png");
-        rsscalelabel.RSScaleLabel.setScaleLabel(jLabel2, "src/imagen/file.png");
+        //rsscalelabel.RSScaleLabel.setScaleLabel(jLabel2, "src/imagen/file.png");
+
+        // Agregar el listener de mouse para mover la ventana
+        addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                initialClick = e.getPoint();
+            }
+        });
+
+        addMouseMotionListener(new MouseAdapter() {
+            public void mouseDragged(MouseEvent e) {
+                int thisX = getLocation().x;
+                int thisY = getLocation().y;
+
+                int xMoved = e.getX() - initialClick.x;
+                int yMoved = e.getY() - initialClick.y;
+
+                int newX = thisX + xMoved;
+                int newY = thisY + yMoved;
+
+                setLocation(newX, newY);
+            }
+        });
     }
 // Método para reproducir el sonido
 
-    
-
     private void startLabelAnimation() {
+        // Inicializar la posición Y del JLabel fuera de la pantalla (arriba)
+        labelY = -jLabel1.getHeight();
+        jLabel1.setLocation(jLabel1.getX(), labelY);
+
         timer = new Timer(3, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (labelX < (getWidth() - jLabel1.getWidth()) / 2) {
-                    labelX += LABEL_SPEED;
-                    jLabel1.setLocation(labelX, jLabel1.getY());
+                // Mover el JLabel de arriba hacia abajo (pero mantenerlo en la parte superior de la ventana)
+                if (labelY < 20) { // Cambia 50 a la posición Y deseada en la parte superior
+                    labelY += LABEL_SPEED;
+                    jLabel1.setLocation(jLabel1.getX(), labelY);
                 } else {
                     timer.stop();
                 }
@@ -115,7 +147,6 @@ public class MenuInicio extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -129,30 +160,28 @@ public class MenuInicio extends javax.swing.JFrame {
         setSize(new java.awt.Dimension(1000, 900));
         getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.LINE_AXIS));
 
-        jPanel2.setBackground(new java.awt.Color(102, 102, 255));
+        jPanel2.setBackground(new java.awt.Color(153, 153, 153));
         jPanel2.setForeground(new java.awt.Color(0, 153, 255));
         jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jButton1.setBackground(new java.awt.Color(102, 102, 255));
+        jButton1.setBackground(new java.awt.Color(102, 0, 255));
         jButton1.setFont(new java.awt.Font("Verdana", 1, 18)); // NOI18N
         jButton1.setForeground(new java.awt.Color(255, 255, 255));
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagen/inmigracion.png"))); // NOI18N
         jButton1.setText("REPORTES");
-        jButton1.setContentAreaFilled(false);
         jButton1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
-        jPanel2.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(850, 480, 250, 120));
+        jPanel2.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(880, 480, 300, 120));
 
-        jButton2.setBackground(new java.awt.Color(102, 102, 255));
+        jButton2.setBackground(new java.awt.Color(0, 0, 255));
         jButton2.setFont(new java.awt.Font("Verdana", 1, 18)); // NOI18N
         jButton2.setForeground(new java.awt.Color(255, 255, 255));
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagen/codigo-qr.png"))); // NOI18N
         jButton2.setText("SCANEAR ASISTENCIA");
-        jButton2.setContentAreaFilled(false);
         jButton2.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -161,12 +190,11 @@ public class MenuInicio extends javax.swing.JFrame {
         });
         jPanel2.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(880, 80, 300, 130));
 
-        jButton3.setBackground(new java.awt.Color(102, 102, 255));
+        jButton3.setBackground(new java.awt.Color(0, 102, 51));
         jButton3.setFont(new java.awt.Font("Verdana", 1, 18)); // NOI18N
         jButton3.setForeground(new java.awt.Color(255, 255, 255));
         jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagen/registro.png"))); // NOI18N
         jButton3.setText("REGISTRAR ALUMNO");
-        jButton3.setContentAreaFilled(false);
         jButton3.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -175,7 +203,7 @@ public class MenuInicio extends javax.swing.JFrame {
         });
         jPanel2.add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(880, 280, 300, 130));
 
-        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagen/cerrar-sesion.png"))); // NOI18N
+        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagen/close.png"))); // NOI18N
         jButton4.setBorderPainted(false);
         jButton4.setContentAreaFilled(false);
         jButton4.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -184,16 +212,15 @@ public class MenuInicio extends javax.swing.JFrame {
                 jButton4ActionPerformed(evt);
             }
         });
-        jPanel2.add(jButton4, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 10, 110, 80));
+        jPanel2.add(jButton4, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 80, 50));
 
         jLabel1.setFont(new java.awt.Font("Dialog", 1, 36)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setText("SISTEMA DE CONTROL DE ASISTENCIA");
-        jPanel2.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 0, 740, 50));
+        jLabel1.setForeground(new java.awt.Color(0, 0, 0));
+        jLabel1.setText("CONTROL DE ASISTENCIA");
+        jPanel2.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 0, 490, 50));
 
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagen/file.png"))); // NOI18N
-        jPanel2.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 100, 530, 510));
+        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagen/hand-mockup-designify.png"))); // NOI18N
+        jPanel2.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 470, 640));
 
         getContentPane().add(jPanel2);
 
@@ -267,7 +294,7 @@ public class MenuInicio extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(MenuInicio.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-       
+
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {

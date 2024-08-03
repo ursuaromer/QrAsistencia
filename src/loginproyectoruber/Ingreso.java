@@ -7,6 +7,7 @@ package loginproyectoruber;
 
 import Animaciones.BlurEffect;
 import Animaciones.Cargando;
+import MenuInicio.MenuInicio;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
@@ -16,6 +17,13 @@ import javax.swing.JLayeredPane;
 import javax.swing.SwingWorker;
 import Reporte.Reporte;
 import java.awt.Color;
+import loginproyectoruber.Acceso;
+import generadordeqr.DatabaseConnection;
+import javax.swing.BorderFactory;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -26,11 +34,11 @@ public class Ingreso extends javax.swing.JFrame {
     int xMouse, yMouse;
 
     public Ingreso() {
-        setUndecorated(true); 
+        setUndecorated(true);
         initComponents();
         setLocationRelativeTo(null);
         setResizable(false);
-       // rsscalelabel.RSScaleLabel.setScaleLabel(jLabel1, "src/imagen/Enter.png");
+        // rsscalelabel.RSScaleLabel.setScaleLabel(jLabel1, "src/imagen/Enter.png");
         //rsscalelabel.RSScaleLabel.setScaleLabel(jLabel6,"src/imagen/reg.png");
         rsscalelabel.RSScaleLabel.setScaleLabel(jLabel2, "src/imagen/logosistemas.jpg");
     }
@@ -73,6 +81,42 @@ public class Ingreso extends javax.swing.JFrame {
         cargando.setVisible(true);
     }
 
+    private void showTemporaryMessage(String message, int messageType) {
+        JDialog dialog = new JDialog(this);
+        dialog.setUndecorated(true);
+
+        JLabel label = new JLabel(message);
+        // Usar el método setFont sin crear un nuevo objeto Font
+        label.setFont(label.getFont().deriveFont(javax.swing.UIManager.getFont("Label.font").getStyle() | java.awt.Font.BOLD, 18f));
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40));
+
+        java.awt.Color backgroundColor;
+        switch (messageType) {
+            case JOptionPane.ERROR_MESSAGE:
+                backgroundColor = new java.awt.Color(255, 200, 200);
+                break;
+            case JOptionPane.INFORMATION_MESSAGE:
+                backgroundColor = new java.awt.Color(200, 255, 200);
+                break;
+            default:
+                backgroundColor = new java.awt.Color(255, 255, 200);
+        }
+
+        label.setOpaque(true);
+        label.setBackground(backgroundColor);
+
+        dialog.add(label);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+
+        new javax.swing.Timer(1000, e -> {
+            dialog.dispose();
+            ((javax.swing.Timer) e.getSource()).stop();
+        }).start();
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -91,10 +135,12 @@ public class Ingreso extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
         jButton1 = new javax.swing.JButton();
-        userpas = new javax.swing.JTextField();
+        usuario = new javax.swing.JTextField();
         contraseña = new javax.swing.JTextField();
+        jButton2 = new javax.swing.JButton();
         exitBtn = new javax.swing.JPanel();
         exitTxt = new javax.swing.JLabel();
+        jButton4 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -104,7 +150,7 @@ public class Ingreso extends javax.swing.JFrame {
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagen/logosistemas.jpg"))); // NOI18N
 
-        jPanel2.setBackground(new java.awt.Color(0, 0, 255));
+        jPanel2.setBackground(new java.awt.Color(31, 41, 55));
         jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagen/user.png"))); // NOI18N
@@ -122,7 +168,7 @@ public class Ingreso extends javax.swing.JFrame {
         jPanel2.add(jSeparator1, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 290, 258, 10));
         jPanel2.add(jSeparator2, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 210, 260, 19));
 
-        jButton1.setBackground(new java.awt.Color(0, 153, 0));
+        jButton1.setBackground(new java.awt.Color(0, 0, 0));
         jButton1.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
         jButton1.setForeground(new java.awt.Color(255, 255, 255));
         jButton1.setText("INGRESAR");
@@ -132,10 +178,23 @@ public class Ingreso extends javax.swing.JFrame {
             }
         });
         jPanel2.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 360, 180, 50));
-        jPanel2.add(userpas, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 180, 260, 30));
+        jPanel2.add(usuario, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 180, 260, 30));
         jPanel2.add(contraseña, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 260, 260, 30));
 
-        exitBtn.setBackground(new java.awt.Color(255, 255, 255));
+        jButton2.setBackground(new java.awt.Color(51, 255, 51));
+        jButton2.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jButton2.setForeground(new java.awt.Color(0, 0, 0));
+        jButton2.setText("¿DESEA MODIFICAR SU CONTRASEÑA?");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+        jPanel2.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 450, -1, -1));
+
+        exitBtn.setBackground(new java.awt.Color(0, 0, 255));
+        exitBtn.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+        jPanel2.add(exitBtn, new org.netbeans.lib.awtextra.AbsoluteConstraints(406, 0, 40, -1));
 
         exitTxt.setFont(new java.awt.Font("Roboto Light", 0, 24)); // NOI18N
         exitTxt.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -153,21 +212,19 @@ public class Ingreso extends javax.swing.JFrame {
                 exitTxtMouseExited(evt);
             }
         });
+        jPanel2.add(exitTxt, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 0, 40, -1));
 
-        javax.swing.GroupLayout exitBtnLayout = new javax.swing.GroupLayout(exitBtn);
-        exitBtn.setLayout(exitBtnLayout);
-        exitBtnLayout.setHorizontalGroup(
-            exitBtnLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, exitBtnLayout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(exitTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-        exitBtnLayout.setVerticalGroup(
-            exitBtnLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, exitBtnLayout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(exitTxt, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
+        jButton4.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        jButton4.setForeground(new java.awt.Color(255, 255, 255));
+        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagen/atras.png"))); // NOI18N
+        jButton4.setText("Retroceder");
+        jButton4.setContentAreaFilled(false);
+        jButton4.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -175,18 +232,18 @@ public class Ingreso extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(exitBtn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(80, 80, 80)
-                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 75, Short.MAX_VALUE)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 443, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jButton4))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 111, Short.MAX_VALUE)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 463, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(exitBtn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(74, 74, 74)
+                .addComponent(jButton4)
+                .addGap(66, 66, 66)
                 .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 303, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(93, Short.MAX_VALUE))
             .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -196,9 +253,7 @@ public class Ingreso extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 926, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -221,16 +276,40 @@ public class Ingreso extends javax.swing.JFrame {
     }//GEN-LAST:event_exitTxtMouseEntered
 
     private void exitTxtMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_exitTxtMouseExited
-        exitBtn.setBackground(Color.white);
+        exitBtn.setBackground(Color.blue);
         exitTxt.setForeground(Color.black);
     }//GEN-LAST:event_exitTxtMouseExited
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         Reporte re = new Reporte();
-        mostrarCargando(evt, re);
+        String usu = usuario.getText();
+        String pss = contraseña.getText();
+        DatabaseConnection dat = new DatabaseConnection();
+        if (dat.validarLogeo(usu, pss)) {
+            mostrarCargando(evt, re);
+
+        } else {
+            SwingUtilities.invokeLater(()
+                    -> showTemporaryMessage("ACCESO DENEGADO", JOptionPane.ERROR_MESSAGE)
+            );
+        }
 
 
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        Acceso acceso = new Acceso();
+        acceso.setVisible(true);
+        dispose();
+
+
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        MenuInicio menu = new MenuInicio();
+        menu.setVisible(true);
+        dispose();
+    }//GEN-LAST:event_jButton4ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -258,7 +337,8 @@ public class Ingreso extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(Ingreso.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-
+        com.sun.javafx.application.PlatformImpl.startup(() -> {
+        });
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -272,6 +352,8 @@ public class Ingreso extends javax.swing.JFrame {
     private javax.swing.JPanel exitBtn;
     private javax.swing.JLabel exitTxt;
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -280,6 +362,6 @@ public class Ingreso extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
-    private javax.swing.JTextField userpas;
+    private javax.swing.JTextField usuario;
     // End of variables declaration//GEN-END:variables
 }

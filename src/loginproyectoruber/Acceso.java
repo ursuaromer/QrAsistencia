@@ -1,0 +1,307 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package loginproyectoruber;
+
+import Animaciones.BlurEffect;
+import Animaciones.Cargando;
+import MenuInicio.MenuInicio;
+import Reporte.Reporte;
+import generadordeqr.DatabaseConnection;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
+import javax.swing.JOptionPane;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+
+/**
+ *
+ * @author ursua
+ */
+public class Acceso extends javax.swing.JFrame {
+
+    private Point initialClick;
+
+    /**
+     * Creates new form Acceso
+     */
+    public Acceso() {
+        setUndecorated(true); // Esto oculta la barra de título
+
+        initComponents();
+        setResizable(false);
+        setLocationRelativeTo(null);
+
+        // Agregar el listener de mouse para mover la ventana
+        addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                initialClick = e.getPoint();
+            }
+        });
+
+        addMouseMotionListener(new MouseAdapter() {
+            public void mouseDragged(MouseEvent e) {
+                int thisX = getLocation().x;
+                int thisY = getLocation().y;
+
+                int xMoved = e.getX() - initialClick.x;
+                int yMoved = e.getY() - initialClick.y;
+
+                int newX = thisX + xMoved;
+                int newY = thisY + yMoved;
+
+                setLocation(newX, newY);
+            }
+        });
+
+    }
+
+    private void mostrarCargando(ActionEvent evt, JFrame nuevaInterfaz) {
+        // Crear una imagen del MenuInicio actual
+        BufferedImage screenshot = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+        paint(screenshot.getGraphics());
+
+        // Aplicar efecto de desenfoque
+        BufferedImage blurredScreenshot = BlurEffect.applyBlur(screenshot, 10);
+
+        // Crear un JLabel con la imagen desenfocada
+        JLabel blurredBackground = new JLabel(new ImageIcon(blurredScreenshot));
+        blurredBackground.setBounds(0, 0, getWidth(), getHeight());
+
+        // Agregar el fondo desenfocado al contenido del MenuInicio
+        JLayeredPane layeredPane = getLayeredPane();
+        layeredPane.add(blurredBackground, JLayeredPane.PALETTE_LAYER);
+
+        Cargando cargando = new Cargando(this);
+        SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                Thread.sleep(2000); // Simula un tiempo de carga
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                layeredPane.remove(blurredBackground);
+                layeredPane.revalidate();
+                layeredPane.repaint();
+                cargando.dispose();
+                nuevaInterfaz.setVisible(true);
+                dispose();
+            }
+        };
+        worker.execute();
+        cargando.setVisible(true);
+    }
+
+    private void showTemporaryMessage(String message, int messageType) {
+        JDialog dialog = new JDialog(this);
+        dialog.setUndecorated(true);
+
+        JLabel label = new JLabel(message);
+        // Usar el método setFont sin crear un nuevo objeto Font
+        label.setFont(label.getFont().deriveFont(javax.swing.UIManager.getFont("Label.font").getStyle() | java.awt.Font.BOLD, 18f));
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40));
+
+        java.awt.Color backgroundColor;
+        switch (messageType) {
+            case JOptionPane.ERROR_MESSAGE:
+                backgroundColor = new java.awt.Color(255, 200, 200);
+                break;
+            case JOptionPane.INFORMATION_MESSAGE:
+                backgroundColor = new java.awt.Color(200, 255, 200);
+                break;
+            default:
+                backgroundColor = new java.awt.Color(255, 255, 200);
+        }
+
+        label.setOpaque(true);
+        label.setBackground(backgroundColor);
+
+        dialog.add(label);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+
+        new javax.swing.Timer(1000, e -> {
+            dialog.dispose();
+            ((javax.swing.Timer) e.getSource()).stop();
+        }).start();
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jPanel2 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
+        jSeparator2 = new javax.swing.JSeparator();
+        jButton1 = new javax.swing.JButton();
+        userpas = new javax.swing.JTextField();
+        contraseña = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        jButton4 = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jPanel2.setBackground(new java.awt.Color(31, 41, 55));
+        jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagen/user.png"))); // NOI18N
+        jPanel2.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 40, 113, -1));
+
+        jLabel4.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel4.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel4.setText("VALIDE SUS DATOS");
+        jPanel2.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 20, 160, -1));
+
+        jLabel5.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel5.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel5.setText("CONTRASEÑA:");
+        jPanel2.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 260, -1, -1));
+        jPanel2.add(jSeparator1, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 320, 258, 10));
+        jPanel2.add(jSeparator2, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 240, 260, 19));
+
+        jButton1.setBackground(new java.awt.Color(0, 153, 0));
+        jButton1.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        jButton1.setForeground(new java.awt.Color(255, 255, 255));
+        jButton1.setText("INGRESAR");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        jPanel2.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 380, 180, 50));
+        jPanel2.add(userpas, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 210, 260, 30));
+        jPanel2.add(contraseña, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 290, 260, 30));
+
+        jLabel6.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel6.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel6.setText("USUARIO:");
+        jPanel2.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 180, -1, -1));
+
+        jButton4.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        jButton4.setForeground(new java.awt.Color(255, 255, 255));
+        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagen/atras.png"))); // NOI18N
+        jButton4.setText("RETROCESO");
+        jButton4.setContentAreaFilled(false);
+        jButton4.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+        jPanel2.add(jButton4, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 470, -1, -1));
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 455, Short.MAX_VALUE)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 533, Short.MAX_VALUE)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 533, Short.MAX_VALUE))
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        Login log = new Login();
+        String usu = userpas.getText();
+        String pss = contraseña.getText();
+        DatabaseConnection dat = new DatabaseConnection();
+        if (dat.validarLogeo(usu, pss)) {
+            mostrarCargando(evt, log);
+
+        } else {
+            SwingUtilities.invokeLater(()
+                    -> showTemporaryMessage("ACCESO DENEGADO", JOptionPane.ERROR_MESSAGE)
+            );
+        }
+
+
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        Ingreso ingre= new Ingreso();
+        ingre.setVisible(true);
+        dispose();
+    }//GEN-LAST:event_jButton4ActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Acceso.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Acceso.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Acceso.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Acceso.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+        com.sun.javafx.application.PlatformImpl.startup(() -> {
+        });
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Acceso().setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField contraseña;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton4;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JTextField userpas;
+    // End of variables declaration//GEN-END:variables
+}
